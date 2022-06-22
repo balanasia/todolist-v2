@@ -77,16 +77,29 @@ app.post("/", function(req, res){
 
   //stores user input
   const itemName = req.body.newItem;
+  //stores the list item
+  const listName = req.body.list;
 
+  //create an item for the default list
   const item = new Item ({
     name: itemName
   });
 
-  //save the user input item
-  item.save();
-
-  //redirect the user back to the home route
-  res.redirect("/");
+  //if the current list is the default list,
+  //save the list and redirrect back to the home route
+  if(listName === "Today"){
+    item.save();
+    res.redirect("/");
+    //else if the list is custom, find the custom list by name
+    //and push the item into the custom list
+    //save the list and redirect  back to the custom list
+  } else {
+    List.findOne({name: listName}, function(err, foundList){
+      foundList.items.push(item);
+      foundList.save();
+      res.redirect("/" + listName);
+    });
+  }
 });
 
 app.post("/delete", function(req, res){
