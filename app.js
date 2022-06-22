@@ -40,24 +40,24 @@ app.get("/", function(req, res) {
 
   Item.find({}, function(err, foundItems) {
 
-  if(err) {
-    console.log(err);
-  } else {
-    //insert default data only if the database is empty
-    if(foundItems.length===0) {
-
-      Item.insertMany(defaultItems, function(err) {
-        if(err) {
-          console.log(err);
-        } else {
-          console.log("Items successfully added");
-        }
-      });
-      res.redirect("/");
+    if(err) {
+      console.log(err);
     } else {
-      res.render("list", {listTitle: "Today", newListItems: foundItems});
+      //insert default data only if the database is empty
+      if(foundItems.length===0) {
+
+        Item.insertMany(defaultItems, function(err) {
+          if(err) {
+            console.log(err);
+          } else {
+            console.log("Items successfully added");
+          }
+        });
+        res.redirect("/");
+      } else {
+        res.render("list", {listTitle: "Today", newListItems: foundItems});
+      }
     }
-  }
 
   });
 
@@ -65,15 +65,20 @@ app.get("/", function(req, res) {
 
 app.post("/", function(req, res){
 
-  const item = req.body.newItem;
+  //stores user input
+  const itemName = req.body.newItem;
 
-  if (req.body.list === "Work") {
-    workItems.push(item);
-    res.redirect("/work");
-  } else {
-    items.push(item);
-    res.redirect("/");
-  }
+  const item = new Item ({
+    name: itemName
+  });
+
+  //save the user input item
+  item.save();
+
+  //redirect the user back to the home route
+  res.redirect("/");
+
+
 });
 
 app.get("/work", function(req,res){
