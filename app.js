@@ -34,6 +34,16 @@ const item3 = new Item ({
   name: "Water Cucumbers"
 });
 
+//for the custom list
+const listSchema = {
+  name: String,
+  items: [itemSchema]
+}
+
+//model for the custom list
+const List = mongoose.model("List", listSchema);
+
+//stores the default items for the list
 const defaultItems = [item1, item2, item3];
 
 app.get("/", function(req, res) {
@@ -91,6 +101,29 @@ app.post("/delete", function(req, res){
     }
   });
 });
+
+app.get("/:customListName", function(req, res){
+  const customListName = req.params.customListName;
+
+  List.findOne({name: customListName}, function(err, foundList){
+    if(!err){
+      if(!foundList) {
+        //create a new list item
+        //for the custom list
+        const list = new List({
+          name: customListName,
+          items: defaultItems
+        });
+        list.save();
+        res.redirect("/" + customListName);
+      } else{
+        //path to show the existing list
+        res.render("list", {listTitle: foundList.name, newListItems: foundList.items});
+      }
+    }
+  });
+});
+
 
 app.get("/work", function(req,res){
   res.render("list", {listTitle: "Work List", newListItems: workItems});
