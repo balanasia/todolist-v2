@@ -77,8 +77,19 @@ app.post("/", function(req, res){
 
   //redirect the user back to the home route
   res.redirect("/");
+});
 
+app.post("/delete", function(req, res){
+  const checkedItemID = req.body.checkbox;
 
+  Item.findByIdAndRemove(checkedItemID, function(err){
+    //if no errors, remove an item with that ID
+    if(!err){
+      console.log(checkedItemID + " has been removed");
+      //redirrect once removed from mongodb
+      res.redirect("/");
+    }
+  });
 });
 
 app.get("/work", function(req,res){
