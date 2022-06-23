@@ -3,6 +3,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+const _ = require("lodash");
 
 const app = express();
 
@@ -104,19 +105,44 @@ app.post("/", function(req, res){
 
 app.post("/delete", function(req, res){
   const checkedItemID = req.body.checkbox;
+  //list name form list.ejs
+  const listName = req.body.listName;
 
-  Item.findByIdAndRemove(checkedItemID, function(err){
-    //if no errors, remove an item with that ID
-    if(!err){
-      console.log(checkedItemID + " has been removed");
-      //redirrect once removed from mongodb
-      res.redirect("/");
-    }
-  });
+  //checking if we are deleting data from
+  //the default or custom list
+  if(listName === "Today") {
+    Item.findByIdAndRemove(checkedItemID, function(err){
+      //if no errors, remove an item with that ID
+      if(!err){
+        console.log(checkedItemID + " has been removed");
+        //redirrect once removed from mongodb
+        res.redirect("/");
+      }
+    });
+  //else if custom list
+  } else {
+    //finding an item from the cutsom list
+    //and updating it
+
+    //1st parameter: find what we want to update
+    //updating the custom list
+    //2nd parameter: data to be updated
+    //pulling the item with the checked item ID
+    //3rd parameter: callback that returns the found list of no errors
+    List.findOneAndUpdate({name: listName},{$pull: {items: {_id: checkedItemID}}}, function(err, foundList){
+      if(!err){
+        //redirect to the custom list
+        //once the item is deleted
+        res.redirect("/" + listName);
+      }
+    });
+  }
 });
 
 app.get("/:customListName", function(req, res){
-  const customListName = req.params.customListName;
+  const customListName = _.capitalize(req.params.customListName);
+
+  if (req.params.customListName == "favicon.ico") return;
 
   List.findOne({name: customListName}, function(err, foundList){
     if(!err){
@@ -127,8 +153,9 @@ app.get("/:customListName", function(req, res){
           name: customListName,
           items: defaultItems
         });
-        list.save();
-        res.redirect("/" + customListName);
+        list.save(function(){
+          res.redirect("/"+customListName);
+        });
       } else{
         //path to show the existing list
         res.render("list", {listTitle: foundList.name, newListItems: foundList.items});
