@@ -13,7 +13,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 
 //create the mongoose conneciton with todolistDB
-mongoose.connect("mongodb+srv://anabalasia:LSO0lb7bE0tO0IXf@cluster0.duw2nrw.mongodb.net/todolistDB?retryWrites=true&w=majority");
+mongoose.connect('mongodb://localhost:27017/todolistDB');
 
 //create a mongoose Schema
 const itemSchema = {
@@ -176,7 +176,7 @@ app.get("/about", function(req, res){
 let port = process.env.PORT;
 if (port==null || port==""){
   port = 3000;
-} 
+}
 
 app.listen(port, function() {
   console.log("Server started successfully");
